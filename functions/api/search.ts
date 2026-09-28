@@ -8,21 +8,17 @@ import { allowSkillIds } from "../_core/allowlist";
 
 interface SearchBody {
   prompt?: unknown;
-  captchaToken?: unknown;
   openaiKey?: unknown;
   queries?: unknown;
 }
 
-function parseBody(value: unknown): { prompt: string; captchaToken: string; openaiKey: string | undefined; queries: string[] | undefined } {
+function parseBody(value: unknown): { prompt: string; openaiKey: string | undefined; queries: string[] | undefined } {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new InputError("invalid_json", "Request body must be a JSON object.");
   }
   const body = value as SearchBody;
   if (typeof body.prompt !== "string" || body.prompt.trim().length < 3 || body.prompt.length > 2000) {
     throw new InputError("invalid_prompt", "Prompt must be a string between 3 and 2000 characters.");
-  }
-  if (typeof body.captchaToken !== "string" || body.captchaToken.length === 0) {
-    throw new InputError("missing_captcha", "Captcha verification is required.");
   }
   const openaiKey = body.openaiKey === undefined ? undefined : typeof body.openaiKey === "string" ? body.openaiKey : undefined;
   if (body.openaiKey !== undefined && openaiKey === undefined) {
@@ -35,7 +31,7 @@ function parseBody(value: unknown): { prompt: string; captchaToken: string; open
     }
     queries = body.queries as string[];
   }
-  return { prompt: body.prompt, captchaToken: body.captchaToken, openaiKey, queries };
+  return { prompt: body.prompt, openaiKey, queries };
 }
 
 export const POST = withErrors(async (request: Request, context: RouteContext): Promise<Response> => {
@@ -46,8 +42,8 @@ export const POST = withErrors(async (request: Request, context: RouteContext): 
   } catch {
     throw new InputError("invalid_json", "Request body must be JSON.");
   }
-  const { prompt, captchaToken, openaiKey, queries } = parseBody(raw);
-  await guard("search", ctx, captchaToken);
+  const { prompt, openaiKey, queries } = parseBody(raw);
+  await guard("search", ctx);
 
   const ai = providerForRequest(openaiKey);
   const results = await rankSkills(prompt, ai, ctx, queries);

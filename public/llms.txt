@@ -2,7 +2,7 @@
 
 > Skill Finder helps people discover, compare and download open "agent skills" (SKILL.md instruction files) for AI coding agents such as Claude Code, Cursor, GitHub Copilot and ChatGPT. Skills come from the open skills registry (skills.sh) and GitHub.
 
-Interactive AI search on the homepage is protected by hCaptcha. Agents should use the free, read-only JSON API or the MCP server below; neither needs a key or captcha. Both are rate-limited per visitor (30 requests/minute, 500/day) and return 429 with a Retry-After header when exceeded.
+Interactive AI search on the homepage is rate-limited per visitor. Agents should use the free, read-only JSON API or the MCP server below; neither needs a key or captcha. Both are rate-limited per visitor (30 requests/minute, 500/day) and return 429 with a Retry-After header when exceeded.
 
 ## Agent API (v1)
 

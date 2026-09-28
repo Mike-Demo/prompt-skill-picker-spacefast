@@ -104,8 +104,8 @@ function ApiDocsPage() {
             Agent API
           </h1>
           <p className="text-sm text-muted-foreground sm:text-base">
-            A free, read-only JSON API so AI agents can use the skill catalogue without the
-            captcha. No key needed. Each visitor can make 30 requests a minute and 500 a day;
+            A free, read-only JSON API so AI agents can use the skill catalogue directly. No
+            key needed. Each visitor can make 30 requests a minute and 500 a day;
             over that you get a 429 with a Retry-After header.
           </p>
         </header>

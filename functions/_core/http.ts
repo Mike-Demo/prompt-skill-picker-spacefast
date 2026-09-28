@@ -62,9 +62,6 @@ export function handleRouteError(error: unknown): Response {
   if (error instanceof InvalidOpenAiKeyError) {
     return apiError(502, "invalid_openai_key", error.message);
   }
-  if (error instanceof Error && /captcha/i.test(error.message)) {
-    return apiError(400, "captcha_failed", error.message);
-  }
   console.error("Unhandled route error:", error);
   return apiError(500, "internal_error", "Something went wrong. Please try again.");
 }

@@ -8,11 +8,6 @@
  *
  * IPs are hashed with a server-side salt before storage, so raw addresses are
  * never persisted.
- *
- * NOTE: the original Supabase implementation also kept an `ip_blocks` table
- * fed by captcha failures. The migration spec's schema has no such table, so
- * hard blocks are not implemented here; recordCaptchaFailure is a no-op kept
- * for call-site compatibility.
  */
 import { first, run, type SpacefastDb } from "./db";
 import type { CoreContext } from "./request";
@@ -178,12 +173,4 @@ export async function enforceRateLimit(
       retryAfter,
     );
   }
-}
-
-/**
- * Records a captcha failure. No-op: without the original `ip_blocks` table
- * there is nothing durable to write to. Kept so call sites stay unchanged.
- */
-export async function recordCaptchaFailure(_ip: string, _ctx: CoreContext): Promise<void> {
-  return Promise.resolve();
 }

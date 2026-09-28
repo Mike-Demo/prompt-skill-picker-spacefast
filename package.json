@@ -3,7 +3,6 @@
     "@ai-sdk/openai-compatible": "^3.0.41",
     "@cloudflare/vite-plugin": "^1.25.5",
     "@fontsource/nebula-sans": "^5.3.0",
-    "@hcaptcha/react-hcaptcha": "^2.2.0",
     "@hookform/resolvers": "^5.2.2",
     "@lovable.dev/mcp-js": "^3.0.4",
     "@mlc-ai/web-llm": "^0.2.80",

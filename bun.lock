@@ -8,7 +8,6 @@
         "@ai-sdk/openai-compatible": "^3.0.41",
         "@cloudflare/vite-plugin": "^1.25.5",
         "@fontsource/nebula-sans": "^5.3.0",
-        "@hcaptcha/react-hcaptcha": "^2.2.0",
         "@hookform/resolvers": "^5.2.2",
         "@lovable.dev/mcp-js": "^3.0.4",
         "@mlc-ai/web-llm": "^0.2.80",
@@ -249,8 +248,6 @@
     "@floating-ui/utils": ["@floating-ui/utils@0.2.12", "", {}, "sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww=="],
 
     "@fontsource/nebula-sans": ["@fontsource/nebula-sans@5.3.0", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@fontsource/nebula-sans/-/nebula-sans-5.3.0.tgz", {}, "sha512-2hDc3f8cNS6Itm6bTmQ/XX9KVE7+oRcQv/viwggBfC+h7VE2avzrC+i64vh96gUd8PUOd1CcUEelientMcNlIA=="],
-
-    "@hcaptcha/react-hcaptcha": ["@hcaptcha/react-hcaptcha@2.2.0", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@hcaptcha/react-hcaptcha/-/react-hcaptcha-2.2.0.tgz", {}, "sha512-/HrPgNLRrJziLrh2s+qFRO33ubBSuHn9sdNsQcP0wQElpORxlpR6wnq3X9j/bZGd+uQtYIvPl4QSU2la+Jl9Hg=="],
 
     "@hono/node-server": ["@hono/node-server@1.19.17", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@hono/node-server/-/node-server-1.19.17.tgz", { "peerDependencies": { "hono": "^4" } }, "sha512-dSneS5qhiauZWGDCeK4o695Xd9nUNjviSZCMQrj10eetr8Uln1ucn6bbphOM6UynAMMtNIzZNSpL9vnASJwrPQ=="],
 

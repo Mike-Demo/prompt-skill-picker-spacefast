@@ -89,7 +89,6 @@ function post<T>(path: string, data: unknown): Promise<T> {
 
 export async function searchSkills(input: {
   prompt: string;
-  captchaToken: string;
   openaiKey?: string;
   queries?: string[];
 }): Promise<{ results: SkillSuggestion[]; token: string | null }> {
@@ -98,15 +97,9 @@ export async function searchSkills(input: {
 
 export async function enhancePrompt(input: {
   prompt: string;
-  captchaToken: string;
   openaiKey: string;
 }): Promise<{ enhanced: string }> {
   return post("/api/enhance", input);
-}
-
-export async function getCaptchaSitekey(): Promise<string> {
-  const { sitekey } = (await apiFetch("/api/captcha-sitekey")) as { sitekey: string };
-  return sitekey;
 }
 
 export async function fetchSkillFiles(ids: string[]): Promise<SkillFile[]> {

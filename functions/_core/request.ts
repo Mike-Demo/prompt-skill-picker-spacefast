@@ -10,11 +10,8 @@ import { ensureSchema, type SpacefastDb } from "./db";
 
 export interface CoreEnv {
   db: SpacefastDb;
-  HCAPTCHA_SITEKEY?: string | undefined;
-  HCAPTCHA_SECRET_KEY?: string | undefined;
   GITHUB_GIST_TOKEN?: string | undefined;
   RATE_LIMIT_SALT?: string | undefined;
-  /** "development" enables hCaptcha's test keys; anything else fails closed. */
   NODE_ENV?: string | undefined;
 }
 
@@ -56,8 +53,6 @@ export async function initRequest(request: Request, context: RouteContext): Prom
   return {
     env: {
       db,
-      HCAPTCHA_SITEKEY: asString(context.env["HCAPTCHA_SITEKEY"]),
-      HCAPTCHA_SECRET_KEY: asString(context.env["HCAPTCHA_SECRET_KEY"]),
       GITHUB_GIST_TOKEN: asString(context.env["GITHUB_GIST_TOKEN"]),
       RATE_LIMIT_SALT: asString(context.env["RATE_LIMIT_SALT"]),
       NODE_ENV: asString(context.env["NODE_ENV"]),
