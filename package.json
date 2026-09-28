@@ -6,6 +6,7 @@
     "@hcaptcha/react-hcaptcha": "^2.2.0",
     "@hookform/resolvers": "^5.2.2",
     "@lovable.dev/mcp-js": "^3.0.4",
+    "@mlc-ai/web-llm": "^0.2.80",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-aspect-ratio": "^1.1.8",
@@ -92,7 +93,7 @@
   },
   "private": true,
   "scripts": {
-    "build": "vite build",
+    "build": "node scripts/generate-sitemap.mjs && vite build && node scripts/copy-static-output.mjs",
     "build:dev": "vite build --mode development",
     "dev": "vite dev",
     "format": "prettier --write .",

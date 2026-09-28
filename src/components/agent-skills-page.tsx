@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import {
@@ -14,11 +13,7 @@ import {
 import { SelectionBar } from "@/components/selection-bar";
 import { AgentIcon, AgentNav } from "@/components/agent-nav";
 import { downloadSkillsZip } from "@/lib/zip";
-import {
-  fetchSkillFiles,
-  listAgentSkills,
-  type SkillLibraryEntry,
-} from "@/lib/skills.functions";
+import { fetchSkillFiles, listAgentSkills, type SkillLibraryEntry } from "@/lib/api-client";
 import type { AgentPage } from "@/lib/agents";
 import { isRateLimitMessage, useCooldown } from "@/hooks/use-cooldown";
 import { formatInstalls } from "@/lib/format";
@@ -36,12 +31,9 @@ function installCommand(entry: SkillLibraryEntry): string {
 export function AgentSkillsPage({ agent }: AgentSkillsPageProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  const loadSkills = useServerFn(listAgentSkills);
-  const runFetch = useServerFn(fetchSkillFiles);
-
   const skills = useQuery({
     queryKey: ["agent-skills", agent.key],
-    queryFn: () => loadSkills({ data: { agent: agent.key } }),
+    queryFn: () => listAgentSkills(agent.key),
     staleTime: 30 * 60 * 1000,
     retry: (attempt, error) => attempt < 2 && !isRateLimitMessage(error),
   });
@@ -53,7 +45,7 @@ export function AgentSkillsPage({ agent }: AgentSkillsPageProps) {
 
   const download = useMutation({
     mutationFn: async (ids: string[]) => {
-      const files = await runFetch({ data: { ids } });
+      const files = await fetchSkillFiles(ids);
       if (files.length === 0) throw new Error("None of the selected skills could be downloaded.");
       await downloadSkillsZip(files, agent.zipName);
     },
@@ -66,7 +58,6 @@ export function AgentSkillsPage({ agent }: AgentSkillsPageProps) {
   const entries: SkillLibraryEntry[] = skills.data?.entries ?? [];
   const registryDown = skills.data?.unavailable === true;
   const servedFromCache = skills.data?.stale === true;
-
 
   const toggle = (id: string) => {
     setSelected((prev) => {

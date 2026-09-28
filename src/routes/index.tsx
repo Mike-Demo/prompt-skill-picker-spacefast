@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
@@ -7,10 +6,10 @@ import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { SelectionBar } from "@/components/selection-bar";
 import { SkillResultCard } from "@/components/skill-result-card";
 import { AgentNav } from "@/components/agent-nav";
+import { AiSettings, useAiSettings } from "@/components/ai-settings";
 import {
   WaButton,
   WaCallout,
-
   WaIcon,
   WaSkeleton,
   WaTextarea,
@@ -30,7 +29,8 @@ import {
   getCaptchaSitekey,
   searchSkills,
   type SkillSuggestion,
-} from "@/lib/skills.functions";
+} from "@/lib/api-client";
+import { enhanceLocal, expandQueriesLocal } from "@/lib/local-model";
 import { formatInstalls } from "@/lib/format";
 import { useCooldown } from "@/hooks/use-cooldown";
 import { websiteJsonLd, webApplicationJsonLd } from "@/lib/structured-data";
@@ -101,16 +101,28 @@ function SkillFinderPage() {
   // Local storage is browser-only, so hydrate the list after mount.
   useEffect(() => setRecent(readRecentSearches()), []);
 
-  const runSearch = useServerFn(searchSkills);
-  const runFetch = useServerFn(fetchSkillFiles);
-  const runEnhance = useServerFn(enhancePrompt);
-  const fetchSitekey = useServerFn(getCaptchaSitekey);
+  // Optional AI configuration: stored OpenAI key and/or the in-browser model.
+  const { openAiKey, localModel } = useAiSettings();
 
-  const sitekeyQuery = useQuery({ queryKey: ["captcha-sitekey"], queryFn: fetchSitekey });
+  const sitekeyQuery = useQuery({ queryKey: ["captcha-sitekey"], queryFn: getCaptchaSitekey });
 
   const search = useMutation({
-    mutationFn: (value: { prompt: string; captchaToken: string }) =>
-      runSearch({ data: value }),
+    mutationFn: async (value: { prompt: string; captchaToken: string }) => {
+      // Local-model mode expands the prompt into keyword queries in the
+      // browser and never sends a key; otherwise the stored key (if any)
+      // rides along with the request so the server can rank with AI.
+      if (localModel) {
+        const queries = await expandQueriesLocal(value.prompt);
+        return searchSkills({ prompt: value.prompt, captchaToken: value.captchaToken, queries });
+      }
+      return openAiKey
+        ? searchSkills({
+            prompt: value.prompt,
+            captchaToken: value.captchaToken,
+            openaiKey: openAiKey,
+          })
+        : searchSkills({ prompt: value.prompt, captchaToken: value.captchaToken });
+    },
     onMutate: () => setShareToken(null),
     onError: (error) => {
       // The cached token was rejected (evicted cache, worker restart): make
@@ -133,8 +145,17 @@ function SkillFinderPage() {
   });
 
   const enhance = useMutation({
-    mutationFn: (value: { prompt: string; captchaToken: string }) =>
-      runEnhance({ data: value }),
+    mutationFn: async (value: { prompt: string; captchaToken?: string }) => {
+      // Local-model mode runs entirely in the browser: no captcha, no server call.
+      if (localModel) return { enhanced: await enhanceLocal(value.prompt) };
+      if (!openAiKey) throw new Error("Add your OpenAI key in AI settings below to use Enhance.");
+      if (!value.captchaToken) throw new Error("Complete the CAPTCHA first to use Enhance.");
+      return enhancePrompt({
+        prompt: value.prompt,
+        captchaToken: value.captchaToken,
+        openaiKey: openAiKey,
+      });
+    },
     onSuccess: (result) => setPrompt(result.enhanced),
     // The verified token stays valid server-side for a few minutes, so the
     // same captcha solve still covers the search that follows an enhance.
@@ -142,7 +163,7 @@ function SkillFinderPage() {
 
   const download = useMutation({
     mutationFn: async (ids: string[]) => {
-      const files = await runFetch({ data: { ids } });
+      const files = await fetchSkillFiles(ids);
       if (files.length === 0) throw new Error("None of the selected skills could be downloaded.");
       await downloadSkillsZip(files);
     },
@@ -167,8 +188,14 @@ function SkillFinderPage() {
   });
   const enhanceCooldown = useCooldown(enhance.error, () => {
     const trimmed = prompt.trim();
-    if (trimmed.length >= 3 && captchaToken && captchaVerified)
+    if (trimmed.length < 3) return;
+    // Local mode needs no captcha; server mode retries only with a fresh
+    // token, so a rate-limited enhance recovers on its own either way.
+    if (localModel) {
+      enhance.mutate({ prompt: trimmed });
+    } else if (captchaToken && captchaVerified && openAiKey) {
       enhance.mutate({ prompt: trimmed, captchaToken });
+    }
   });
   const downloadCooldown = useCooldown(download.error, () => {
     if (selected.size > 0) download.mutate([...selected]);
@@ -200,6 +227,17 @@ function SkillFinderPage() {
   const runEnhanceClick = () => {
     const trimmed = prompt.trim();
     if (trimmed.length < 3 || busy) return;
+    // Local-model mode needs no captcha and makes no server call.
+    if (localModel) {
+      enhance.mutate({ prompt: trimmed });
+      return;
+    }
+    if (!openAiKey) {
+      showEnhanceHint(
+        "Add your OpenAI key in AI settings below, or enable the in-browser model, to use Enhance.",
+      );
+      return;
+    }
     if (!captchaToken || !captchaVerified) {
       showEnhanceHint("Complete the CAPTCHA first to use Enhance.");
       return;
@@ -238,7 +276,6 @@ function SkillFinderPage() {
           </div>
           <AgentNav />
         </header>
-
 
         <form
           className="mt-8 space-y-3"
@@ -301,9 +338,7 @@ function SkillFinderPage() {
               </button>
             ))}
           </div>
-          {enhanceHint ? (
-            <p className="text-xs text-muted-foreground">{enhanceHint}</p>
-          ) : null}
+          {enhanceHint ? <p className="text-xs text-muted-foreground">{enhanceHint}</p> : null}
           <div className="flex justify-center">
             {sitekeyQuery.data ? (
               <HCaptcha
@@ -333,6 +368,8 @@ function SkillFinderPage() {
           </div>
         </form>
 
+        <AiSettings />
+
         {enhance.isError ? (
           <WaCallout variant="danger" className="mt-6">
             {enhance.error instanceof Error ? enhance.error.message : "Enhance failed."}
@@ -347,7 +384,6 @@ function SkillFinderPage() {
             ) : null}
           </WaCallout>
         ) : null}
-
 
         {search.isPending ? (
           <ul className="mt-8 space-y-3">

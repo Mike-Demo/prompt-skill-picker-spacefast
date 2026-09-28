@@ -1,7 +1,7 @@
 import { WaBadge, WaCheckbox } from "@/design-system/font-awsome-web-awesome-171158";
 import { SkillActions } from "@/components/skill-actions";
 import { formatInstalls } from "@/lib/format";
-import type { SkillSuggestion } from "@/lib/skills.functions";
+import type { SkillSuggestion } from "@/lib/api-client";
 
 interface SkillResultCardProps {
   readonly skill: SkillSuggestion;

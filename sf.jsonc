@@ -1,0 +1,1 @@
+{"$schema":"https://spacefast.com/schemas/sf.json","crons":[{"path":"/api/cron/cleanup","schedule":"hourly"}],"name":"skill-finder","runtime":{"database":true,"fetch":true,"kind":"functions"}}

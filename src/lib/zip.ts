@@ -1,6 +1,6 @@
 import JSZip from "jszip";
 
-import type { SkillFile } from "./skills.functions";
+import type { SkillFile } from "./api-client";
 
 /** Builds a flat zip of markdown files and triggers a browser download. */
 export async function downloadSkillsZip(files: SkillFile[], zipName = "skills.zip"): Promise<void> {

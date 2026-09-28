@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
@@ -13,7 +12,7 @@ import {
   WaSkeleton,
 } from "@/design-system/font-awsome-web-awesome-171158";
 import { downloadSkillsZip } from "@/lib/zip";
-import { fetchSkillFiles, listSkills, type SkillLibraryEntry } from "@/lib/skills.functions";
+import { fetchSkillFiles, listSkills, type SkillLibraryEntry } from "@/lib/api-client";
 import { isRateLimitMessage, useCooldown } from "@/hooks/use-cooldown";
 import { formatInstalls } from "@/lib/format";
 
@@ -47,12 +46,9 @@ function SkillLibraryPage() {
   const [sort, setSort] = useState<SortMode>("popular");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  const loadSkills = useServerFn(listSkills);
-  const runFetch = useServerFn(fetchSkillFiles);
-
   const library = useQuery({
     queryKey: ["skill-library"],
-    queryFn: () => loadSkills(),
+    queryFn: listSkills,
     staleTime: 30 * 60 * 1000,
     // Retrying a rate-limit rejection only deepens the limit, so surface it instead.
     retry: (attempt, error) => attempt < 2 && !isRateLimitMessage(error),
@@ -60,7 +56,7 @@ function SkillLibraryPage() {
 
   const download = useMutation({
     mutationFn: async (ids: string[]) => {
-      const files = await runFetch({ data: { ids } });
+      const files = await fetchSkillFiles(ids);
       if (files.length === 0) throw new Error("None of the selected skills could be downloaded.");
       await downloadSkillsZip(files, "skill-library.zip");
     },
@@ -69,7 +65,6 @@ function SkillLibraryPage() {
   const entries: SkillLibraryEntry[] = library.data?.entries ?? [];
   const registryDown = library.data?.unavailable === true;
   const servedFromCache = library.data?.stale === true;
-
 
   // A rate-limited load is not retried by React Query; instead the cooldown
   // expiring retries it once, so the page recovers without a click.
@@ -225,7 +220,6 @@ function SkillLibraryPage() {
             No skills match that filter.
           </p>
         ) : null}
-
 
         <ul className="mt-8 space-y-3">
           {visible.map((entry) => {

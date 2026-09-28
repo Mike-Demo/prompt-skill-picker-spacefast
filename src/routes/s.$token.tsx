@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { SelectionBar } from "@/components/selection-bar";
@@ -7,7 +6,7 @@ import { SkillResultCard } from "@/components/skill-result-card";
 import { WaCallout, WaIcon, WaSkeleton } from "@/design-system/font-awsome-web-awesome-171158";
 import { useCooldown } from "@/hooks/use-cooldown";
 import { downloadSkillsZip } from "@/lib/zip";
-import { fetchSkillFiles, getSavedSearch } from "@/lib/skills.functions";
+import { fetchSkillFiles, getSavedSearch } from "@/lib/api-client";
 
 const TITLE = "Shared skill search — Skill Finder";
 const DESCRIPTION =
@@ -31,17 +30,14 @@ function SharedSearchPage() {
   const { token } = Route.useParams();
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  const loadSaved = useServerFn(getSavedSearch);
-  const runFetch = useServerFn(fetchSkillFiles);
-
   const saved = useQuery({
     queryKey: ["saved-search", token],
-    queryFn: () => loadSaved({ data: { token } }),
+    queryFn: () => getSavedSearch(token),
   });
 
   const download = useMutation({
     mutationFn: async (ids: string[]) => {
-      const files = await runFetch({ data: { ids } });
+      const files = await fetchSkillFiles(ids);
       if (files.length === 0) throw new Error("None of the selected skills could be downloaded.");
       await downloadSkillsZip(files);
     },

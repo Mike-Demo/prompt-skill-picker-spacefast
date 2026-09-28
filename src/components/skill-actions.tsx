@@ -1,8 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 
 import { WaIcon } from "@/design-system/font-awsome-web-awesome-171158";
-import { createSkillGist, fetchSkillFiles } from "@/lib/skills.functions";
+import { createSkillGist, fetchSkillFiles } from "@/lib/api-client";
 import { openInCodePen } from "@/lib/codepen";
 
 interface SkillActionsProps {
@@ -17,12 +16,9 @@ const linkClass =
 
 /** Per-skill "open elsewhere" actions: source repo, CodePen, GitHub Gist. */
 export function SkillActions({ id, name, htmlUrl, canOpen }: SkillActionsProps) {
-  const runFetch = useServerFn(fetchSkillFiles);
-  const runGist = useServerFn(createSkillGist);
-
   const codepen = useMutation({
     mutationFn: async () => {
-      const files = await runFetch({ data: { ids: [id] } });
+      const files = await fetchSkillFiles([id]);
       const file = files[0];
       if (!file) throw new Error("This skill has no markdown file to open.");
       openInCodePen(name, file.content);
@@ -31,7 +27,7 @@ export function SkillActions({ id, name, htmlUrl, canOpen }: SkillActionsProps) 
 
   const gist = useMutation({
     mutationFn: async () => {
-      const { url } = await runGist({ data: { id } });
+      const { url } = await createSkillGist(id);
       window.open(url, "_blank", "noopener,noreferrer");
     },
   });

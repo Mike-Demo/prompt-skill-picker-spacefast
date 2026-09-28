@@ -1,6 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
-  ClientOnly,
   Outlet,
   Link,
   createRootRouteWithContext,
@@ -11,12 +10,9 @@ import {
 import { useEffect, type ReactNode } from "react";
 import { useChunkLoadRecovery } from "@/hooks/use-chunk-load-recovery";
 
-
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteFooter } from "@/components/site-footer";
-import { getRenderMode } from "@/lib/render-mode.functions";
-import { WaSkeleton } from "@/design-system/font-awsome-web-awesome-171158";
 import {
   WebAwesomeLoader,
   WEB_AWESOME_HTML_CLASSES,
@@ -93,16 +89,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "google-site-verification",
         content: "RHlwBdxnagu8yjEC1UQ3cV-WcIJ17lGECi8uJYHO6P4",
       },
-
     ],
     links: [
       // Web Awesome base styles + utilities (CDN, version-pinned).
-      { rel: "stylesheet", href: "https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.12.0/dist/styles/webawesome.css" },
+      {
+        rel: "stylesheet",
+        href: "https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.12.0/dist/styles/webawesome.css",
+      },
       // Default theme + default palette: defines every --wa-* design token
       // scoped to the wa-theme-default / wa-light classes on <html>.
-      { rel: "stylesheet", href: "https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.12.0/dist/styles/themes/default.css" },
+      {
+        rel: "stylesheet",
+        href: "https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.12.0/dist/styles/themes/default.css",
+      },
       // Font Awesome Free icon set (wa-icon resolves SVGs from this).
-      { rel: "stylesheet", href: "https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css" },
+      {
+        rel: "stylesheet",
+        href: "https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css",
+      },
       {
         rel: "stylesheet",
         href: appCss,
@@ -110,7 +114,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
     ],
   }),
-  loader: () => getRenderMode(),
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
@@ -137,33 +140,15 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-function PageSkeleton() {
-  return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:py-16">
-      <WaSkeleton className="h-10 w-2/3" />
-      <WaSkeleton className="mt-4 h-4 w-full" />
-      <WaSkeleton className="mt-2 h-4 w-5/6" />
-      <WaSkeleton className="mt-8 h-24 w-full" />
-    </div>
-  );
-}
-
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const renderMode = Route.useLoaderData();
   useChunkLoadRecovery();
 
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      {renderMode === "off" ? (
-        <ClientOnly fallback={<PageSkeleton />}>
-          <Outlet />
-        </ClientOnly>
-      ) : (
-        <Outlet />
-      )}
-      <SiteFooter renderMode={renderMode} />
+      <Outlet />
+      <SiteFooter />
       {/* Registers all <wa-*> custom elements client-side, post-hydration. */}
       <WebAwesomeLoader />
     </QueryClientProvider>

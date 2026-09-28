@@ -1,8 +1,6 @@
 import { Link } from "@tanstack/react-router";
 
 import { WaIcon } from "@/design-system/font-awsome-web-awesome-171158";
-import { RenderModeSwitch } from "@/components/render-mode-switch";
-import type { RenderMode } from "@/lib/render-mode";
 import { cn } from "@/lib/utils";
 
 const linkedInUrl = "https://www.linkedin.com/in/mikedemopoulos";
@@ -13,13 +11,7 @@ const githubUrl = "https://github.com/Mike-Demo";
 const linkClass =
   "inline-flex items-center gap-1.5 rounded px-1.5 py-1 font-medium text-foreground/80 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
-export function SiteFooter({
-  className,
-  renderMode,
-}: {
-  className?: string;
-  renderMode: RenderMode;
-}) {
+export function SiteFooter({ className }: { className?: string }) {
   const year = new Date().getFullYear();
 
   return (
@@ -33,7 +25,6 @@ export function SiteFooter({
         <span>Made by MikeDemo</span>
         <span aria-label={`Copyright ${year}`}>© {year}</span>
       </div>
-      <RenderModeSwitch mode={renderMode} />
       <nav aria-label="Legal links" className="flex flex-wrap items-center justify-center gap-4">
         <Link to="/licenses" className={linkClass}>
           <WaIcon name="code" />
@@ -72,8 +63,7 @@ export function SiteFooter({
           aria-label="MikeDemo on X (opens in new tab)"
           className={linkClass}
         >
-          <WaIcon name="x-twitter" family="brands" />
-          X
+          <WaIcon name="x-twitter" family="brands" />X
         </a>
         <a
           href={threadsUrl}
